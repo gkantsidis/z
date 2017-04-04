@@ -135,7 +135,7 @@ function z {
             if ($ListFiles) {
 
                 $newList = $list | % { New-Object PSObject -Property  @{Rank = $_.Rank; Path = $_.Path.FullName; LastAccessed = [DateTime]$_.Time } }
-                Format-Table -InputObject $newList -AutoSize
+                $newList | Format-Table -AutoSize
 
             } else {
 
@@ -508,7 +508,7 @@ function Save-CdCommandHistory($removeCurrentDirectory = $false) {
 
 function WriteHistoryToDisk() {
   $newList = GetAllHistoryAsText $global:history
-  Out-File -InputObject $newList -FilePath $cdHistory
+  $newList | Out-File -FilePath $cdHistory
 }
 
 function GetAllHistoryAsText($history) {
@@ -621,7 +621,11 @@ function Get-ArgsFilter {
 
 # Get cdHistory and hydrate a in-memory collection
 $global:history = @()
-$global:history += Get-Content -Path $cdHistory -Encoding UTF8 | ? { (-not [String]::IsNullOrWhiteSpace($_)) } | ConvertTo-DirectoryEntry
+if (Test-Path -Path $cdHistory) {
+    $global:history += Get-Content -Path $cdHistory -Encoding UTF8 | `
+                    Where-Object { (-not [String]::IsNullOrWhiteSpace($_)) } | `
+                    ConvertTo-DirectoryEntry
+}
 
 $orig_cd = (Get-Alias -Name 'cd').Definition
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
