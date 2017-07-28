@@ -1,4 +1,4 @@
-﻿$cdHistory = Join-Path -Path $Env:USERPROFILE -ChildPath '\.cdHistory'
+﻿$cdHistory = Join-Path -Path ([Environment]::GetFolderPath("User")) -ChildPath '\.cdHistory'
 
 <#
 
@@ -99,16 +99,16 @@ function z {
 )
 
     if (((-not $Clean) -and (-not $Remove)) -and [string]::IsNullOrWhiteSpace($JumpPath)) { Get-Help z; return; }
- 
+
     # If a valid path is passed in to z, treat it like the normal cd command
     if (-not [string]::IsNullOrWhiteSpace($JumpPath) -and (Test-Path $JumpPath)) {
         cdX $JumpPath
         return;
     }
-    
+
     if ((Test-Path $cdHistory)) {
         if ($Remove) {
-        Save-CdCommandHistory $Remove
+            Save-CdCommandHistory $Remove
         } elseif ($Clean) {
             Cleanup-CdCommandHistory
         } else {
@@ -343,7 +343,7 @@ function Get-DirectoryEntryMatchPredicate {
         }
 
         if ($providerMatches) {
-            
+
             # Allows matching of entire names. Remove the first two characters, added by PowerShell when the user presses the TAB key.
             if ($JumpPath.StartsWith('.\')) {
                 $JumpPath = $JumpPath.Substring(2).TrimEnd('\')
@@ -372,7 +372,7 @@ function Get-CurrentSessionProviderDrives([System.Collections.ArrayList] $Provid
 }
 
 function Get-ProviderDrivesRegex([System.Collections.ArrayList] $ProviderDrives) {
-    
+
     # UNC paths get special treatment. Allows one to 'z foo -ProviderDrives \\' and specify '\\' as the drive.
     if ($ProviderDrives -contains '\\') {
         $ProviderDrives.('\\')
